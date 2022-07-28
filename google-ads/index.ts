@@ -16,6 +16,9 @@ import moment from 'moment-timezone';
             refresh_token: process.env.REFRESH_TOKEN as string,
         });
 
+        const from = moment('2022-07-20').format('YYYY-MM-DD');
+        const to = moment('2022-07-21').format('YYYY-MM-DD');
+
         const response = await customer.query(`
                 SELECT
                 campaign.id,
@@ -33,25 +36,46 @@ import moment from 'moment-timezone';
                 call_view.end_call_date_time,
                 call_view.start_call_date_time
             FROM call_view
-            WHERE call_view.end_call_date_time DURING YESTERDAY
+            WHERE call_view.end_call_date_time BETWEEN '${from}' AND '${to}'
         `);
 
         const convertPSTToUTC = (date: string) => {
             return moment.tz(date, 'America/Los_Angeles').utc();
         };
 
-        for (const { call_view } of response) {
+        /*
+        for (const { call_view, campaign, customer, ad_group } of response) {
             const startTimePst = call_view?.start_call_date_time ? moment.tz(call_view.start_call_date_time, 'America/Los_Angeles') : null;
-            const startTimeBangkok = call_view?.start_call_date_time ? moment.tz(call_view.start_call_date_time, 'Asia/Bangkok') : null;
 
+            const record = {
+                accountId: customer?.id,
+                accountName: customer?.descriptive_name,
+                accountStatus: customer?.status,
+                campaignId: campaign?.id,
+                campaignName: campaign?.name,
+                campaignStatus: campaign?.status,
+                adGroupId: ad_group?.id,
+                adGroupName: ad_group?.name,
+                adGroupStatus: ad_group?.status,
+                duration: call_view?.call_duration_seconds,
+                countryCode: call_view?.caller_country_code,
+                areaCode: call_view?.caller_area_code,
+                startTime: call_view?.start_call_date_time,
+                endTime: call_view?.end_call_date_time,
+            };
+
+            console.log(record);
+
+            /*
             console.log({
                 startTime: [call_view?.start_call_date_time,  startTimePst, convertPSTToUTC(call_view?.start_call_date_time as string), startTimePst?.toDate()],
             });
         }
+        */
 
         console.log({
-            pst: moment.tz(new Date(), 'America/Los_Angeles'),
-            utc: moment.utc(),
+            pst: moment.tz('2022-07-20 06:27:01', 'America/Los_Angeles'),
+            utc: moment.tz('2022-07-20 06:27:01', 'America/Los_Angeles').utc().toDate(),
         });
 
     } catch (error: unknown) {
