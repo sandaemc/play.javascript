@@ -2,6 +2,10 @@ import 'dotenv/config'
 import { GoogleAdsApi } from "google-ads-api";
 import moment from 'moment-timezone';
 
+const convertPSTToUTC = (date: string) => {
+    return moment.tz(date, 'America/Los_Angeles').utc();
+};
+
 (async () => {
     try {
         const client = new GoogleAdsApi({
@@ -29,6 +33,7 @@ import moment from 'moment-timezone';
                 ad_group.status,
                 customer.id,
                 customer.descriptive_name,
+                customer.time_zone,
                 customer.status,
                 call_view.call_duration_seconds,
                 call_view.caller_area_code,
@@ -39,11 +44,7 @@ import moment from 'moment-timezone';
             WHERE call_view.end_call_date_time BETWEEN '${from}' AND '${to}'
         `);
 
-        const convertPSTToUTC = (date: string) => {
-            return moment.tz(date, 'America/Los_Angeles').utc();
-        };
 
-        /*
         for (const { call_view, campaign, customer, ad_group } of response) {
             const startTimePst = call_view?.start_call_date_time ? moment.tz(call_view.start_call_date_time, 'America/Los_Angeles') : null;
 
@@ -62,16 +63,16 @@ import moment from 'moment-timezone';
                 areaCode: call_view?.caller_area_code,
                 startTime: call_view?.start_call_date_time,
                 endTime: call_view?.end_call_date_time,
+                timezone: customer?.time_zone
             };
 
-            console.log(record);
-
-            /*
             console.log({
-                startTime: [call_view?.start_call_date_time,  startTimePst, convertPSTToUTC(call_view?.start_call_date_time as string), startTimePst?.toDate()],
+                startTime: call_view?.start_call_date_time,
+                startTimeToDate: call_view?.start_call_date_time ? new Date(call_view?.start_call_date_time) : null,
+                startTimeToMomentToDate: moment(call_view?.start_call_date_time).toDate(),
+                startTimeToMomentToUTCToDate:  call_view?.start_call_date_time ? convertPSTToUTC(call_view?.start_call_date_time).toDate() : null,
             });
         }
-        */
 
         console.log({
             pst: moment.tz('2022-07-20 06:27:01', 'America/Los_Angeles'),
