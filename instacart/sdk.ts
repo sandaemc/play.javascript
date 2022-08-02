@@ -43,6 +43,19 @@ export class Sdk {
         return data;
     }
 
+    async getDetails(orderId: string) {
+        const id = orderId.length >= 20 ? orderId.slice(4) : orderId;
+
+        const { data } = await this.instance.get(`api/v2/orders/${id}`, {
+            params: {
+                source: 'web',
+                replacement_options: true
+            }
+        })
+
+        return data;
+    }
+
     async getDeliveryTimeOptions() {
         const storeId = 57; // retailer id
         const { data } = await this.instance.get(`/v3/retailers/${storeId}/delivery_options`, {
