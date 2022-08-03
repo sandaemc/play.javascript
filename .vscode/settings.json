@@ -1,5 +1,4 @@
 {
-
     "files.exclude": {
         "**/.git": true,
         "**/.svn": true,
@@ -8,5 +7,13 @@
         "**/.DS_Store": true,
         "**/Thumbs.db": true,
         "**/node_modules": true,
-    }
+    },
+    "code-runner.clearPreviousOutput": true,
+    "code-runner.executorMap": {
+        "javascript": "node",
+        "java": "cd $dir && javac $fileName && java $fileNameWithoutExt",
+        "go": "go run",
+        "shellscript": "zsh",
+        "typescript": "cd $dir && node -r ts-node/register $fileNameWithoutExt",
+    },
 }
