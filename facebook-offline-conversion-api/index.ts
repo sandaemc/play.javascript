@@ -1,9 +1,11 @@
 import 'dotenv/config';
 import axios, { AxiosInstance } from 'axios';
 import * as crypto from 'crypto';
+import { parse } from 'csv-parse';
+import { createReadStream } from 'fs';
+import dayjs from 'dayjs';
 
-const hash = crypto.createHash('sha256').update('13037760116').digest('hex');
-
+const hash = (value: string) => crypto.createHash('sha256').update(value).digest('hex');
 
 export class Sdk {
 
@@ -48,7 +50,7 @@ export class Sdk {
         return data;
     }
 
-    async uploadEvents(eventSetId: string) {
+    async uploadEvents(eventSetId: string, payload: string) {
         if (!eventSetId) {
             throw new Error("Event set id is required");
         }
@@ -56,13 +58,7 @@ export class Sdk {
         const { data } =  await this.axios.post(`/${eventSetId}/events`, {
             access_token: this.accessToken,
             upload_tag: 'monthly',
-            data: JSON.stringify([
-                {
-                    match_keys: { phone: [hash]},
-                    event_time: '1659219846',
-                    event_name: 'Other',
-                }
-            ])
+            data: payload,
         });
 
         return data;
@@ -93,6 +89,13 @@ export class Sdk {
             }
         });
 
+        for (const stat of data.data) {
+            if (stat.count > 0) {
+                console.log(stat);
+            }
+        }
+
+
         return data;
     }
 
@@ -105,10 +108,45 @@ export class Sdk {
 
         //const eventSetId = await sdk.createEventSet("My Event Set 101");
         const eventSetId = '1101249530492071';
+        // const eventSetId = '698157304949431' sydney's event
         //const data = await sdk.assignAdAccountPermissions(eventSetId, process.env.AD_ACCOUNT_ID as string);
+        const res = await sdk.viewStats(eventSetId);
+        console.log(res);
 
-        const data = await sdk.viewUploads(eventSetId);
-        console.log(data);
+        const records = createReadStream('./temp/conversion.csv').pipe(parse({
+            columns: false,
+            skipEmptyLines: true,
+            skipRecordsWithError: true
+        }));
+
+        const payload = [];
+        let counter = 0;
+        for await (const [createdAt, phone, email, firstName, lastName] of records) {
+            payload.push({
+                match_keys: {
+                    phone: [hash(phone)],
+                    email: [hash(email)]
+                },
+                event_name: 'Other',
+                event_time:  dayjs(createdAt).unix()
+            });
+
+            counter++;
+            if (counter > 2000) {
+                break;
+            }
+        }
+
+        console.log(payload);
+        /*
+
+        const response = await sdk.uploadEvents(eventSetId, JSON.stringify(payload));
+        console.log(response);
+
+        */
+
+
+
 
 
 
