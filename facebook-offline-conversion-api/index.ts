@@ -106,12 +106,7 @@ export class Sdk {
     try {
         const sdk = new Sdk(process.env.ACCESS_TOKEN as string, process.env.BUSINESS_ID as string);
 
-        //const eventSetId = await sdk.createEventSet("My Event Set 101");
-        const eventSetId = '1101249530492071';
-        // const eventSetId = '698157304949431' sydney's event
-        //const data = await sdk.assignAdAccountPermissions(eventSetId, process.env.AD_ACCOUNT_ID as string);
-        const res = await sdk.viewStats(eventSetId);
-        console.log(res);
+        const eventSetId = process.env.EVENT_SET_ID as string;
 
         const records = createReadStream('./temp/conversion.csv').pipe(parse({
             columns: false,

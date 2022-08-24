@@ -3,15 +3,20 @@ import { Sdk } from "./sdk";
 import { inspect } from 'util';
 import { InstacartGetServiceOptions } from "./instacartGetServiceOptions";
 import { mapInstacartServiceOption } from "./instacartServiceOptionMapper";
+import * as fs from 'fs';
 
-const dump = (data: any) => console.log(inspect(data, true, null, false));
+const dump = (data: any) => inspect(data, false, null, false);
 
 (async () => {
     try {
         const sdk = new Sdk();
-        const response = await sdk.getDetails('07288118037239434940');
+        const orderId = '08108231241855535533';
+        const response = await sdk.getDetails(orderId);
 
-        dump(response);
+        const stream = fs.createWriteStream(`./temp/${orderId}.java`);
+        stream.write(dump(response));
+        stream.end();
+
 
 
     } catch (error: unknown) {
